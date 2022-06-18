@@ -1,8 +1,9 @@
 import React from 'react';
-import {Stack} from "@mantine/core";
+import {Box, Button, Stack, Textarea} from "@mantine/core";
 import { Line } from 'react-chartjs-2';
 import {SimlulationResults} from "../math";
 import _ from "lodash";
+import {useClipboard} from "@mantine/hooks";
 
 interface ResultsProps {
     results: SimlulationResults
@@ -39,6 +40,9 @@ const options = {
 };
 
 export const Results = ({results}: ResultsProps) => {
+    const csv = "t,V_avg_h,V_avg_s\n"+results.results.trust_avg_h.map((h,t) => t+","+h+","+results.results.trust_avg_s[t]).join("\n");
+    const clipboard = useClipboard({timeout: 2000});
+
     return <Stack>
         <Line options={options} data={{
             labels: _.range(0, results.input.cycles, 1),
@@ -59,5 +63,8 @@ export const Results = ({results}: ResultsProps) => {
                 },
             ],
         }} />
+        <Textarea label={"CSV z wynikami"} value={csv} rows={20}/>
+        <Button onClick={() => clipboard.copy(csv)}>{clipboard.copied ? "Skopiowano" : "Skopiuj CSV do schowka"}</Button>
+        <Box style={{height: "300px"}}/>
     </Stack>;
 };

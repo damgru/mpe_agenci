@@ -9,7 +9,7 @@ import {
     NumberInput,
     NativeSelect,
     RadioGroup,
-    Radio, LoadingOverlay
+    Radio, LoadingOverlay, Slider
 } from "@mantine/core";
 import {useForm} from "@mantine/form";
 
@@ -105,26 +105,24 @@ export const ConfigForm = ({onStart, inProgress}: ConfigFormProps) => {
                 <Radio value={'M'} label={"M"}/>
                 <Radio value={'D'} label={"D"}/>
             </RadioGroup>
-            <Group>
-                <NumberInput
-                    {...form.getInputProps('wola_x')}
-                    step={0.01}
-                    precision={2}
-                    label={"dobra wola x"}
-                />
-                <NumberInput
-                    {...form.getInputProps('wola_y')}
-                    step={0.01}
-                    precision={2}
-                    label={"dobra wola y"}
-                />
-                <NumberInput
-                    {...form.getInputProps('wola_z')}
-                    step={0.01}
-                    precision={2}
-                    label={"dobra wola z"}
-                />
-            </Group>
+            <NumberInput
+                {...form.getInputProps('wola_x')}
+                step={0.01}
+                precision={2}
+                label={"dobra wola x"}
+            />
+            <NumberInput
+                {...form.getInputProps('wola_y')}
+                step={0.01}
+                precision={2}
+                label={"dobra wola y"}
+            />
+            <NumberInput
+                {...form.getInputProps('wola_z')}
+                step={0.01}
+                precision={2}
+                label={"dobra wola z"}
+            />
             <Group>
                 <NumberInput
                     {...form.getInputProps('delta')}
