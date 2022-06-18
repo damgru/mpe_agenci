@@ -3,13 +3,13 @@ import logo from './logo.svg'
 import './App.css'
 import {ConfigForm, ConfigFormValues} from "./components/inputForm/ConfigForm";
 import {Container, List, Title} from "@mantine/core";
-import {runCycles} from "./math";
+import {runCycles, SimlulationResults} from "./math";
 import {Results} from "./components/Results";
 
 function App() {
     const [loading, setLoading] = useState(false)
     const [start, setStart] = useState<ConfigFormValues|false>(false);
-    const [results, setResults] = useState<object|undefined>(undefined);
+    const [results, setResults] = useState<SimlulationResults|undefined>(undefined);
 
     useEffect(() => {
         if(start == false) {
