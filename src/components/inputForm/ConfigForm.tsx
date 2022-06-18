@@ -90,10 +90,12 @@ export const ConfigForm = ({onStart, inProgress}: ConfigFormProps) => {
                 <NumberInput
                     {...form.getInputProps('expoA')}
                     label={"expo A"}
+                    precision={2}
                 />
                 <NumberInput
                     {...form.getInputProps('expoG')}
                     label={"expo G"}
+                    precision={2}
                 />
             </Group>
             <RadioGroup
@@ -107,16 +109,19 @@ export const ConfigForm = ({onStart, inProgress}: ConfigFormProps) => {
                 <NumberInput
                     {...form.getInputProps('wola_x')}
                     step={0.01}
+                    precision={2}
                     label={"dobra wola x"}
                 />
                 <NumberInput
                     {...form.getInputProps('wola_y')}
                     step={0.01}
+                    precision={2}
                     label={"dobra wola y"}
                 />
                 <NumberInput
                     {...form.getInputProps('wola_z')}
                     step={0.01}
+                    precision={2}
                     label={"dobra wola z"}
                 />
             </Group>
@@ -124,11 +129,13 @@ export const ConfigForm = ({onStart, inProgress}: ConfigFormProps) => {
                 <NumberInput
                     {...form.getInputProps('delta')}
                     step={0.1}
+                    precision={2}
                     label={"δ − współczynnik dyskontowy 1, 0.8, 0.6"}
                 />
                 <NumberInput
                     {...form.getInputProps('v_0')}
                     step={0.01}
+                    precision={2}
                     max={1}
                     min={0}
                     label={"V_0 - początkowy poziom zaufania"}

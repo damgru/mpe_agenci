@@ -1,5 +1,4 @@
 import {useEffect, useState} from 'react'
-import logo from './logo.svg'
 import './App.css'
 import {ConfigForm, ConfigFormValues} from "./components/inputForm/ConfigForm";
 import {Container, List, Title} from "@mantine/core";
