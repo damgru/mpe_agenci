@@ -7,5 +7,5 @@ export default defineConfig({
   base: "/mpe_agenci/",
   build: {
     outDir: "docs"
-  }
+  },
 })

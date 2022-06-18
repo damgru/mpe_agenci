@@ -1,4 +1,6 @@
 import {ConfigFormValues} from "./components/inputForm/ConfigForm";
+// @ts-ignore
+import PD from "./prob-distr/pd.ts";
 
 interface RAEReport {
     t: number,
@@ -13,31 +15,37 @@ interface RAE {
 
 declare global {
     var trust: any[];
+    var trust_avg_s: number[];
+    var trust_avg_h: number[];
     var rae: RAE;
     var r_avg: number[][]
 }
 
 globalThis.trust = [];
+globalThis.trust_avg_s = [];
+globalThis.trust_avg_h = [];
 globalThis.r_avg = [];
 globalThis.rae = {};
 
 export interface SimlulationResults {
-    input: any,
-    results: any
+    input: ConfigFormValues,
+    results: {
+        trust_avg_s: number[],
+        trust_avg_h: number[],
+    }
 }
 
 export async function runCycles (
-    props: ConfigFormValues,
-    beforeEveryCycle: (i: number) => void
+    props: ConfigFormValues
 ): Promise<SimlulationResults> {
     return new Promise(resolve => {
         fillTrust(props.n_agentow, props.v_0);
         fillRae(props.n_agentow);
+
         for (let cycle = 0; cycle < props.cycles; cycle++) {
-            beforeEveryCycle(cycle);
             runCycle(cycle, props);
         }
-        resolve({input: props, results: {rae: rae, v: trust}})
+        resolve({input: props, results: {trust_avg_s, trust_avg_h}})
     })
 }
 
@@ -45,7 +53,6 @@ function runCycle(t: number, props: ConfigFormValues) {
     for (let j = 0; j < props.n_agentow; j++) {
         const providers = selectProviders(j, props);
         providers.map(i => interaction(t,i,j, props))
-        console.log(j, providers);
     }
 
     evaluateCycle(t, props);
@@ -78,8 +85,8 @@ function agentPolicy(agent: number, a: number, b: number, props: ConfigFormValue
 }
 
 function interaction(t: number, i_provider: number, j_receiver: number, props: ConfigFormValues) {
-    const available = random(); // todo: dystrybuanta
-    const efficiency = random(); // todo: dystrybuanta
+    const available = PD.rexp(1, props.expoA)[0];
+    const efficiency = PD.rexp(1, props.expoG)[0];
 
     const i_is_s_agent = isSAgent(i_provider, props);
     const j_is_s_agent = isSAgent(j_receiver, props);
@@ -129,17 +136,50 @@ function evaluateCycle(t: number, props: ConfigFormValues) {
         r_avg[t][i] = calculate_avg_report(t, i, props);
     }
     const avg = r_avg[t].reduce((sum, r) => sum + r, 0) / props.n_agentow;
-    let N_high = [];
-    let N_low = [];
+    let N_high : number[] = [];
+    let N_low  : number[] = [];
     r_avg[t].map((r, i) => {
         if (r >= avg) {
-            N_high.push({i: i, r: r});
+            N_high[i] = r;
         } else {
-            N_low.push({i: i, r: r});
+            N_low[i] = r;
         }
     });
-}
 
+    const avg_high = N_high.reduce((a,b) => a+b, 0) / N_high.length;
+    const avg_low = N_low.reduce((a,b) => a+b, 0) / N_low.length;
+
+    let trust_high_avg = 0;
+    N_high.map((r, i) => {
+        trust[i][t+1] = 1;
+        trust_high_avg += r_avg[t][i]
+    });
+    trust_high_avg = trust_high_avg / N_high.length;
+
+    let trust_low_avg = 0;
+    N_low.map((r, i) => {
+        trust_low_avg += r_avg[t][i];
+    });
+    trust_low_avg = trust_low_avg / N_low.length;
+
+    const trust_low = trust_low_avg/trust_high_avg;
+    N_low.map((r, i) => {
+        trust[i][t+1] = trust_low;
+    });
+
+    //Wyznacz trajektorie uśrednionych miar zaufania
+    let sum = 0;
+    for (let i = 0; i < props.s_agentow; i++) {
+        sum += trust[i][t];
+    }
+    trust_avg_s[t] = sum / props.s_agentow;
+
+    sum = 0
+    for (let i = props.s_agentow; i < props.n_agentow; i++) {
+        sum += trust[i][t];
+    }
+    trust_avg_h[t] = sum / props.n_agentow;
+}
 
 function fillTrust(n: number, value: number) {
     trust = [];
@@ -185,6 +225,16 @@ function goodWill_L(a : number, v : number, x : number) {
 }
 
 const random = Math.random;
+
+function randn_bm() : number {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    num = num / 10.0 + 0.5; // Translate to 0 -> 1
+    if (num > 1 || num < 0) return randn_bm() // resample between 0 and 1
+    return num
+}
 
 function randomNumberFromZero(max: number) {
     return Math.floor(random() * (max));

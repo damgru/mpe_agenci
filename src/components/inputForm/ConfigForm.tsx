@@ -38,11 +38,11 @@ interface ConfigFormProps {
 export const ConfigForm = ({onStart, inProgress}: ConfigFormProps) => {
     const form = useForm<ConfigFormValues>({
         initialValues: {
-            cycles: 5,//100,
-            n_agentow: 20,//1000,
-            s_agentow: 4,//250,
-            k_min: 4,//5,
-            k_max: 7,//15,
+            cycles: 100,
+            n_agentow: 1000,
+            s_agentow: 250,
+            k_min: 5,
+            k_max: 15,
             expoA: 1,
             expoG: 10,
             s_type: 'M',

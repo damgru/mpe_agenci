@@ -4,27 +4,30 @@ import './App.css'
 import {ConfigForm, ConfigFormValues} from "./components/inputForm/ConfigForm";
 import {Container, List, Title} from "@mantine/core";
 import {runCycles} from "./math";
+import {Results} from "./components/Results";
 
 function App() {
     const [loading, setLoading] = useState(false)
     const [start, setStart] = useState<ConfigFormValues|false>(false);
-    const [results, setResults] = useState({});
+    const [results, setResults] = useState<object|undefined>(undefined);
 
     useEffect(() => {
         if(start == false) {
             return;
         }
-        setTimeout(() => {
+        async function runSimulation(start: any) {
             runCycles(
-                start,
-                (i) => console.log(i)
+                start
             )
                 .then(results => {setResults(results); return results})
                 .finally(() => {
                     setLoading(false)
                     setStart(false);
                 })
-        }, 100);
+        }
+
+        runSimulation(start);
+
     }, [start]);
 
     return (
@@ -45,6 +48,7 @@ function App() {
                     inProgress={loading}
                 />
                 <Title order={2}>Wyniki symulacji</Title>
+                {results && <Results results={results}/>}
             </Container>
         </div>
     )
