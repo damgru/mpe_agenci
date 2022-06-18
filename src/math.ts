@@ -1,6 +1,8 @@
 import {ConfigFormValues} from "./components/inputForm/ConfigForm";
 
 interface RAEReport {
+    t: number,
+    i: number,
     j: number,
     R: number
 }
@@ -11,10 +13,12 @@ interface RAE {
 
 declare global {
     var trust: any[];
-    var rae: RAE
+    var rae: RAE;
+    var r_avg: number[][]
 }
 
 globalThis.trust = [];
+globalThis.r_avg = [];
 globalThis.rae = {};
 
 export interface SimlulationResults {
@@ -43,6 +47,8 @@ function runCycle(t: number, props: ConfigFormValues) {
         providers.map(i => interaction(t,i,j, props))
         console.log(j, providers);
     }
+
+    evaluateCycle(t, props);
 }
 
 function selectProviders(forAgent: number, props: ConfigFormValues) {
@@ -101,6 +107,40 @@ function interaction(t: number, i_provider: number, j_receiver: number, props: C
     saveReport(t, i_provider, j_receiver, big_R_ij );
 }
 
+function calculate_avg_report(t: number, i: number, props: ConfigFormValues) {
+    let sum = 0;
+    for (let j = 0; j < props.n_agentow; j++) {
+        const r = findNewestReport(i,j);
+        if (r == undefined) {
+            continue;
+        }
+        const t_diff = t - r.t;
+        const v_j = trust[j][t];
+
+        sum += v_j * Math.pow(props.delta, t_diff) * r.R;
+    }
+
+    return sum;
+}
+
+function evaluateCycle(t: number, props: ConfigFormValues) {
+    r_avg[t] = [];
+    for (let i = 0; i < props.n_agentow; i++) {
+        r_avg[t][i] = calculate_avg_report(t, i, props);
+    }
+    const avg = r_avg[t].reduce((sum, r) => sum + r, 0) / props.n_agentow;
+    let N_high = [];
+    let N_low = [];
+    r_avg[t].map((r, i) => {
+        if (r >= avg) {
+            N_high.push({i: i, r: r});
+        } else {
+            N_low.push({i: i, r: r});
+        }
+    });
+}
+
+
 function fillTrust(n: number, value: number) {
     trust = [];
     for (let i = 0; i < n; i++) {
@@ -125,10 +165,14 @@ function getTrust(t: number, agent: number) {
 
 function saveReport(t: number, i: number, j: number, Rij: number)
 {
-    if (!rae[i].hasOwnProperty(t)) {
-        rae[i][t] = [];
+    if (!rae[i].hasOwnProperty(j)) {
+        rae[i][j] = [];
     }
-    rae[i][t].push({j:j, R: Rij})
+    rae[i][j][t] = {t: t, i: i, j:j, R: Rij};
+}
+
+function findNewestReport(i:number, j:number) {
+    return rae[i]?.[j]?.at(-1) ?? undefined;
 }
 
 function goodWill_L(a : number, v : number, x : number) {
